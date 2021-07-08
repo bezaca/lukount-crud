@@ -1,5 +1,5 @@
 # lukount-crud
-Este projecto ha sido creado para la prueba tecnica de Lukount, consiste en un crud implementado en .net5 que utiliza como base de datos Mongodb y el framework Xunit para las pruebas unitarias. 
+Este projecto ha sido creado para la prueba tecnica de Lukount, consiste en un crud implementado en .net5 que utiliza como base de datos Mongodb y el framework Xunit para las pruebas unitarias e implementando el patron AAA. 
 
 ## Configuración de la base de datos 
 Mongo ha sido implementado mediante un contenedor de docker, se puede ejecutar este contenedor mediante el comando: 
