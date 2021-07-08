@@ -27,11 +27,20 @@ dotnet test
 Estas pruebas estan enfocadas en las funcionalidad de las peticiones HTTP.
 
 ## Despliegue con Docker:
-Actualmente se cuenta con una imagen en dockerhub, lo que permite poder utilizar docker para su uso, mediante:
+Gracias a docker podemos correr nuestro crud mediante contenedores.
+Primero, debemos crear una network para nuestros contenedores mediante:
 ```
-docker push fcsource/lukountcrud:v1
+docker network create "nombre"
 ```
-
+Posteriormente debemos ejecutar nuestra base de datos agregandole el network recien creado:
+```bash
+docker run -d --rm --name mongo -p 27017:27017 -v mongodbdata:/data/db --network="nombre" mongo
+```
+Y por ultimo, debemos ejecutar nuestro crud utilizando:
+```
+docker run -it --rm -p 8080:8080 -e MongoDbSettings:Host=mongo --network="nombre" fcsource/lukountcrud:v2
+```
+Y podremos utilizar `http://localhost:8080` para nuestras peticiones.
 
 
 
