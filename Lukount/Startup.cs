@@ -18,58 +18,71 @@ using MongoDB.Driver;
 
 namespace Lukount
 {
-    public class Startup
-    {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+	public class Startup
+	{
+		private readonly string _cors = "cors";
 
-        public IConfiguration Configuration { get; }
+		public Startup(IConfiguration configuration)
+		{
+			Configuration = configuration;
+		}
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddSingleton<IMongoClient>(
-                ServiceProvider => {
-                    var settings = Configuration.GetSection(nameof(MongoDbSettings)).Get<MongoDbSettings>();
-                    return new MongoClient(settings.ConnectionString);
-                }
-            );
+		public IConfiguration Configuration { get; }
 
-            services.AddSingleton<IPersonRepository, MongoDbPersons>(); 
+		public void ConfigureServices(IServiceCollection services)
+		{
+			services.AddSingleton<IMongoClient>(
+				ServiceProvider =>
+				{
+					var settings = Configuration.GetSection(nameof(MongoDbSettings)).Get<MongoDbSettings>();
+					return new MongoClient(settings.ConnectionString);
+				}
+			);
 
-            services.AddControllers();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Lukount", Version = "v1" });
-            });
-            services.AddControllers(options =>
-            {
-                options.SuppressAsyncSuffixInActionNames = false;
-            });
-        }
+			services.AddSingleton<IPersonRepository, MongoDbPersons>();
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Lukount v1"));
-            }
+			services.AddControllers();
+			services.AddSwaggerGen(c =>
+			{
+				c.SwaggerDoc("v1", new OpenApiInfo { Title = "Lukount", Version = "v1" });
+			});
+			services.AddControllers(options =>
+			{
+				options.SuppressAsyncSuffixInActionNames = false;
+			});
 
-            app.UseHttpsRedirection();
+			services.AddCors(options =>
+			{
+				options.AddPolicy(name: _cors, builder =>
+				{
+					builder.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+					.AllowAnyHeader().AllowAnyMethod();
+				});
+			});
+		}
 
-            app.UseRouting();
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+		{
+			if (env.IsDevelopment())
+			{
+				app.UseHttpsRedirection();
+				app.UseDeveloperExceptionPage();
+				app.UseSwagger();
+				app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Lukount v1"));
+			}
 
-            app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
-        }
-    }
+			app.UseRouting();
+
+			app.UseCors(_cors);
+
+			app.UseAuthorization();
+
+			app.UseEndpoints(endpoints =>
+			{
+				endpoints.MapControllers();
+			});
+		}
+	}
 }
+
